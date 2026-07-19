@@ -38,14 +38,31 @@ const AuthService = (function () {
 
   async function loadProfile(firebaseUser) {
     if (!db || !firebaseUser) return null;
-    const snap = await db.collection('users').doc(firebaseUser.uid).get();
-    const data = snap.exists ? snap.data() : {};
-    return buildUserRecord(firebaseUser.uid, {
-      name: data.name || firebaseUser.displayName || '',
-      email: data.email || firebaseUser.email || '',
-      age: data.age,
-      linked_device: data.linked_device,
-    });
+    
+    try {
+      const snap = await db.collection('users').doc(firebaseUser.uid).get();
+      const data = snap.exists ? snap.data() : {};
+      return buildUserRecord(firebaseUser.uid, {
+        name: data.name || firebaseUser.displayName || '',
+        email: data.email || firebaseUser.email || '',
+        age: data.age,
+        linked_device: data.linked_device,
+      });
+    } catch (error) {
+      // Handle offline and unavailable errors gracefully
+      if (error.code === 'unavailable' || 
+          error.code === 'failed-precondition' ||
+          error.message.includes('offline') ||
+          error.message.includes('No network')) {
+        // Return basic user data from Firebase Auth when Firestore is unavailable
+        return buildUserRecord(firebaseUser.uid, {
+          name: firebaseUser.displayName || '',
+          email: firebaseUser.email || '',
+        });
+      }
+      // Re-throw other errors for the caller to handle
+      throw error;
+    }
   }
 
   function init() {
@@ -59,7 +76,8 @@ const AuthService = (function () {
     auth.onAuthStateChanged(async function (firebaseUser) {
       try {
         currentUser = firebaseUser ? await loadProfile(firebaseUser) : null;
-      } catch {
+      } catch (error) {
+        console.error('Error loading profile:', error.message);
         currentUser = firebaseUser
           ? buildUserRecord(firebaseUser.uid, {
               name: firebaseUser.displayName || '',

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CosmoBot — AI Student Companion by Acutro Technologies Private Limited" />
+  <link rel="icon" type="image/svg+xml" href="cosmobot.svg" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <title>CosmoBot — AI Student Companion</title>
+</head>
+<body>
+  <div class="page">
+    <canvas id="space-canvas" aria-hidden="true"></canvas>
+    <div class="cyber-grid" aria-hidden="true"></div>
+
+    <div class="page-content">
+      <header class="site-header">
+        <div class="logo-wrap">
+          <div class="logo-icon">C</div>
+          <div>
+            <div class="logo-title">CosmoBot</div>
+            <div class="logo-sub">AI Student Companion</div>
+          </div>
+        </div>
+        
+      </header>
+
+      <main class="landing-grid">
+        <div class="landing-main">
+          <div class="glass-panel p-6 p-sm-8 p-lg-10">
+            <div class="glass-panel-corner" aria-hidden="true"></div>
+            <div class="glass-panel-inner">
+              <div class="terminal-label"><span></span> Mission Brief</div>
+
+              <h2 class="hero-title">
+                Your <span class="gradient-text">Cosmic</span> Learning Companion
+              </h2>
+
+              <p class="hero-desc">
+                CosmoBot is an advanced AI student companion designed to transform how children interact with education. It serves as a physical, highly interactive, and responsive learning presence right on a student's desk. Driven by cloud intelligence, CosmoBot moves beyond traditional, static screens to provide a tactile, human-like learning experience that makes education come alive.
+              </p>
+
+              <div class="feature-grid">
+                <div class="feature-card">
+                  <div class="feature-label">Smart</div>
+                  <div class="feature-desc">Intelligent, responsive interactions that adapt to each user's curiosity and engagement</div>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-label">Companion</div>
+                  <div class="feature-desc">Interactive companion for hands-on learning</div>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-label">Cloud-Sync</div>
+                  <div class="feature-desc">Seamless profile sync across devices and sessions</div>
+                </div>
+              </div>
+
+              <div class="cta-row">
+                <a href="login.html" class="btn-panel btn-panel--cyan">
+                  <span class="btn-panel-corner-tr"></span>
+                  <span class="btn-panel-corner-bl"></span>
+                  <span class="btn-panel-dot"></span> Login
+                </a>
+                <a href="register.html" class="btn-panel btn-panel--purple">
+                  <span class="btn-panel-corner-tr"></span>
+                  <span class="btn-panel-corner-bl"></span>
+                  <span class="btn-panel-dot"></span> Register
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="landing-side">
+          <div class="hud-stack">
+            <div class="glass-panel hud-card">
+              <div class="glass-panel-inner hud-row">
+                <div>
+                  <div class="hud-label">Linked Companion</div>
+                  <div class="hud-stat">No paired companion</div>
+                </div>
+                <span class="hud-status">Awaiting Pair</span>
+              </div>
+            </div>
+            <div class="glass-panel hud-card">
+              <div class="glass-panel-inner hud-row">
+                <div>
+                  <div class="hud-label">Neural Engine</div>
+                  <div class="hud-stat">AI Core</div>
+                </div>
+                <span class="hud-status">Active</span>
+              </div>
+            </div>
+            <div class="glass-panel hud-card">
+              <div class="glass-panel-inner hud-row">
+                <div>
+                  <div class="hud-label">Sync Protocol</div>
+                  <div class="hud-stat">Cloud</div>
+                </div>
+                <span class="hud-status">Standby</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="site-footer">
+        CosmoBot — Acutro Technologies Private Limited &copy; <span id="year"></span> — All rights reserved
+      </footer>
+    </div>
+  </div>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script src="js/spaceCanvas.js"></script>
+</body>
+</html>

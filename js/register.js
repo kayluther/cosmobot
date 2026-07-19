@@ -6,12 +6,61 @@
   const touched = {};
 
   const fields = ['name', 'email', 'password', 'confirmPassword', 'age'];
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 1000; // 1 second
+  const AUTH_TIMEOUT = 5000; // 5 seconds
 
-  AuthService.waitForAuth().then(function () {
-    if (AuthService.getCurrentUser()) {
-      window.location.replace('cosmobot-dashboard.html');
-    }
+  // Network state management
+  let isOnline = navigator.onLine;
+  window.addEventListener('online', function () {
+    isOnline = true;
+    serverError.classList.add('hidden');
   });
+  window.addEventListener('offline', function () {
+    isOnline = false;
+    serverError.textContent = 'No internet connection. Please check your network.';
+    serverError.classList.remove('hidden');
+  });
+
+  // Helper: Retry mechanism for failed requests
+  async function retryWithBackoff(fn, retries = MAX_RETRIES) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        if (!isOnline) {
+          throw new Error('No internet connection');
+        }
+        return await fn();
+      } catch (err) {
+        if (i === retries - 1) throw err;
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * Math.pow(2, i)));
+      }
+    }
+  }
+
+  // Helper: Timeout wrapper for promises
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), ms)
+      )
+    ]);
+  }
+
+  // Initialize auth with timeout and retry
+  AuthService.waitForAuth()
+    .then(function () {
+      return withTimeout(Promise.resolve(), AUTH_TIMEOUT);
+    })
+    .then(function () {
+      if (AuthService.getCurrentUser()) {
+        window.location.replace('cosmobot-dashboard.html');
+      }
+    })
+    .catch(function (err) {
+      console.warn('Auth initialization issue:', err.message);
+      // Continue anyway - user can still register
+    });
 
   function getFormData() {
     return {
@@ -89,6 +138,14 @@
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    // Check connection before submission
+    if (!isOnline) {
+      serverError.textContent = 'No internet connection. Please check your network and try again.';
+      serverError.classList.remove('hidden');
+      return;
+    }
+
     serverError.classList.add('hidden');
     fields.forEach(function (f) { touched[f] = true; });
 
@@ -104,21 +161,36 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Processing...';
 
-    const result = await AuthService.registerStudent(data);
+    try {
+      const result = await retryWithBackoff(
+        () => withTimeout(AuthService.registerStudent(data), 10000)
+      );
 
-    if (result.error) {
-      serverError.textContent = result.error;
+      if (result.error) {
+        serverError.textContent = result.error;
+        serverError.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="btn-panel-dot"></span> Complete Registration';
+        return;
+      }
+
+      form.classList.add('hidden');
+      successView.classList.remove('hidden');
+
+      setTimeout(function () {
+        window.location.href = 'login.html?registered=1&email=' + encodeURIComponent(result.user.email);
+      }, 2000);
+    } catch (err) {
+      let errorMsg = 'Registration failed. Please try again.';
+      if (err.message === 'Request timeout') {
+        errorMsg = 'Request timed out. Please check your connection and try again.';
+      } else if (err.message === 'No internet connection') {
+        errorMsg = 'No internet connection. Please check your network.';
+      }
+      serverError.textContent = errorMsg;
       serverError.classList.remove('hidden');
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<span class="btn-panel-dot"></span> Complete Registration';
-      return;
     }
-
-    form.classList.add('hidden');
-    successView.classList.remove('hidden');
-
-    setTimeout(function () {
-      window.location.href = 'login.html?registered=1&email=' + encodeURIComponent(result.user.email);
-    }, 2000);
   });
 })();

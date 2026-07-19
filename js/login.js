@@ -11,6 +11,18 @@
   const resetBtn = document.getElementById('reset-btn');
   const touched = {};
 
+  // Network state management
+  let isOnline = navigator.onLine;
+  window.addEventListener('online', function () {
+    isOnline = true;
+    serverError.classList.add('hidden');
+  });
+  window.addEventListener('offline', function () {
+    isOnline = false;
+    serverError.textContent = 'No internet connection. Please check your network.';
+    serverError.classList.remove('hidden');
+  });
+
   AuthService.waitForAuth().then(function () {
     if (AuthService.getCurrentUser()) {
       window.location.replace('cosmobot-dashboard.html');
@@ -61,6 +73,14 @@
 
   loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
+    
+    // Check if online before proceeding
+    if (!isOnline) {
+      serverError.textContent = 'No internet connection. Please check your network and try again.';
+      serverError.classList.remove('hidden');
+      return;
+    }
+    
     serverError.classList.add('hidden');
     touched.email = true;
     touched.password = true;
@@ -104,6 +124,15 @@
 
   resetForm.addEventListener('submit', async function (e) {
     e.preventDefault();
+    
+    // Check if online before proceeding
+    if (!isOnline) {
+      const errEl = document.getElementById('reset-error');
+      errEl.textContent = 'No internet connection. Please check your network and try again.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    
     const errEl = document.getElementById('reset-error');
     const msgEl = document.getElementById('reset-message');
     errEl.classList.add('hidden');
